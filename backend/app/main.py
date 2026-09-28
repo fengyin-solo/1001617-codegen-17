@@ -5,7 +5,7 @@
 """
 from __future__ import annotations
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
@@ -21,6 +21,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def persist_after_mutation(request: Request, call_next):
+    """写类请求处理成功后落一次快照：页面重进、服务重启都能读回最新数据。"""
+    response = await call_next(request)
+    if request.method in {"POST", "PUT", "PATCH", "DELETE"} and response.status_code < 400:
+        store.save_snapshot()
+    return response
 
 for module in ROUTERS:
     app.include_router(module.router)

@@ -13,6 +13,8 @@ class PageResult(BaseModel, Generic[T]):
     total: int
     page: int = 1
     size: int = 20
+    head_count: int = 0  # 当前过滤口径下的乘客人数合计，与列表、导出保持一致
+    status_counts: dict[str, int] = Field(default_factory=dict)  # 同口径下各状态任务数
 
 
 class ActionResult(BaseModel):
@@ -26,6 +28,69 @@ class EntryPayload(BaseModel):
 
     values: dict[str, Any] = Field(default_factory=dict)
     remark: str | None = None
+
+
+class ShuttleWaveOption(BaseModel):
+    """航班波次选项。"""
+
+    id: int
+    波次编号: str
+    波次名称: str
+    波次日期: str
+    航班数量: int
+    乘客合计: int
+
+
+class ShuttleDispatchCandidate(BaseModel):
+    """波次派车为每个航班生成的候选摆渡任务。"""
+
+    item_key: str
+    关联航班: str
+    乘客人数: int
+    出发时刻: str
+    到达时刻: str
+    车辆编号: str | None = None
+    valid: bool
+    reason: str = ""
+
+
+class ShuttleDispatchPlan(BaseModel):
+    """生成派车方案的结果：可派与不可派任务分开列。"""
+
+    wave: ShuttleWaveOption
+    candidates: list[ShuttleDispatchCandidate]
+    available_count: int
+    rejected_count: int
+    head_count: int
+
+
+class ShuttleDispatchItem(BaseModel):
+    """提交派车时单条候选任务的内容。"""
+
+    item_key: str | None = None
+    关联航班: str
+    乘客人数: Any
+    出发时刻: str
+    到达时刻: str
+    车辆编号: str
+
+
+class ShuttleDispatchSubmit(BaseModel):
+    """按波次提交派车：可以只挑其中一部分任务。"""
+
+    wave_id: int | None = None
+    items: list[ShuttleDispatchItem] = Field(default_factory=list)
+
+
+class ShuttleDispatchResult(BaseModel):
+    """派车提交结果：已生成的任务、被挡住的任务分别列出。"""
+
+    ok: bool
+    message: str
+    created: list[dict[str, Any]] = Field(default_factory=list)
+    blocked: list[dict[str, Any]] = Field(default_factory=list)
+    created_count: int = 0
+    blocked_count: int = 0
 
 
 
