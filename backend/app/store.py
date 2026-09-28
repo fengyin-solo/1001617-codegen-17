@@ -8,6 +8,9 @@ from typing import Any
 
 from app.seed import SEED_ROWS
 
+# 波次派车用的基础数据表，不属于看板上的独立业务模块。
+INTERNAL_MODULES = {"shuttle_wave", "shuttle_vehicle"}
+
 
 class Store:
     def __init__(self) -> None:
@@ -16,7 +19,7 @@ class Store:
         }
 
     def module_names(self) -> list[str]:
-        return sorted(self._tables)
+        return sorted(name for name in self._tables if name not in INTERNAL_MODULES)
 
     def rows(self, module: str) -> list[dict[str, Any]]:
         return self._tables.setdefault(module, [])

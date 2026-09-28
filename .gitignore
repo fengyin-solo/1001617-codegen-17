@@ -85,3 +85,6 @@ desktop.ini
 *.db
 *.pid
 *.seed
+
+# 本地无 pip 时装入项目目录的依赖（仅开发环境）
+.pydeps/

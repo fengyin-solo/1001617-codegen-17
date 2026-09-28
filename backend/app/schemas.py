@@ -28,6 +28,23 @@ class EntryPayload(BaseModel):
     remark: str | None = None
 
 
+class ShuttlePageResult(BaseModel):
+    """摆渡列表分页结果，附带与页面清点、导出一致的人数汇总。"""
+
+    items: list[dict[str, Any]]
+    total: int
+    page: int = 1
+    size: int = 20
+    summary: dict[str, int] = Field(default_factory=dict)
+
+
+class ShuttleDispatchCommitPayload(BaseModel):
+    """波次派车提交：选定波次和要提交的候选序号（可只提交一部分）。"""
+
+    wave_id: int
+    selected: list[int] = Field(default_factory=list)
+
+
 
 class FlightEntry(BaseModel):
     """航班计划明细结构。"""
